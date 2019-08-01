@@ -1,0 +1,7 @@
+***What?
+The Concern is a tool provided by the ActiveSupport lib for including modules in classes, creating mixins.
+
+***Why?
+It has to do with code reuse as in the example below. Basically, the idea is to extract common and / or context specific chunks of code in order to clean up the models and avoid them getting too fat and messy.
+
+Read more here: https://stackoverflow.com/questions/14541823/how-to-use-concerns-in-rails-4

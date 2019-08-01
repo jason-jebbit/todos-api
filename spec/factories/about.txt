@@ -1,0 +1,69 @@
+***What is it?
+"factory_bot is a fixtures replacement with a straightforward definition syntax, support for multiple build strategies (saved instances, unsaved instances, attribute hashes, and stubbed objects), and support for multiple factories for the same class (user, admin_user, and so on), including factory inheritance."
+
+***Why?
+Source: https://semaphoreci.com/blog/2014/01/14/rails-testing-antipatterns-fixtures-and-factories.html
+
+Fixtures are Rails’ default way to prepare and reuse test data. Do not use fixtures.
+
+Let’s take a look at a simple fixture:
+
+# spec/fixtures/users.yml
+marko:
+  first_name: Marko
+  last_name: Anastasov
+  phone: 555-123-6788
+You can use it in a test like this:
+
+RSpec.describe User do
+  fixtures :all
+
+  describe "#full_name" do
+    it "is composed of first and last name" do
+      user = users(:marko)
+      expect(user.full_name).to eql "Marko Anastasov"
+    end
+  end
+end
+There are a few problems with this test code:
+
+– It is not clear where the user came from and how it is set up.
+– We are testing against a “magic value” — implying something was defined in some code, somewhere else.
+
+In practice, these shortcomings are addressed by comment essays:
+
+RSpec.describe Dashboard do
+
+  fixtures :all
+
+  describe "#show" do
+    # User with preferences to view posts about kittens
+    # and in the group with special access to Burmese cats
+    # with 4 friends that like ridgeback dogs.
+    let(:user) { users(:kitten_fan) }
+  end
+end
+Maintaining fixtures of more complex records can be tedious. I recall working on an app where there was a record with dozens of attributes. Whenever a column would be added or changed in the schema, all fixtures needed to be changed by hand. Of course I only recalled this after a few test failures.
+
+A common solution is to use factories. If you recall from the common design patterns, factories are responsible for creating whatever you need to create, in this case records. Factory Bot is a good choice.
+
+Factories let you maintain simple definitions in a single place, but manage all data related to the current test in the test itself when you need to. For example:
+
+FactoryBot.define do
+  factory :user do
+    first_name "Marko"
+    last_name  "Anastasov"
+    phone "555-123-6788"
+  end
+end
+Now your test can set the related attributes before checking for the expected outcome:
+
+RSpec.describe User do
+  describe "#full_name" do
+    let(:user) { build(:user, first_name: "Johnny", last_name: "Bravo") }
+
+    it "is composed of first and last name" do
+      expect(user.full_name).to eql "Johnny Bravo"
+    end
+  end
+end
